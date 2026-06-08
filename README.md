@@ -2,6 +2,15 @@
 
 An Epson TM-U220 side project.
 
+## Usage
+
+To allow logged-in users besides root to access the printer, add this to
+`/etc/udev/rules.d/50-epson-printer.rules`:
+
+```
+ACTION!="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="0202", MODE="0660", TAG+="uaccess"
+```
+
 ## License
 
 Licensed under either of
