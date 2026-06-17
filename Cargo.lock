@@ -441,6 +441,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ip-notifier"
+version = "0.1.0"
+
+[[package]]
 name = "itertools"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -507,6 +511,10 @@ checksum = "0fae87c125b03c1d2c0150c90365d7d6bcc53fb73a9acaef207d2d065860f062"
 dependencies = [
  "imgref",
 ]
+
+[[package]]
+name = "lunch-crawler"
+version = "0.1.0"
 
 [[package]]
 name = "maybe-rayon"
@@ -669,6 +677,14 @@ checksum = "85eae3c4ed2f50dcfe72643da4befc30deadb458a9b590d720cde2f2b1e97da9"
 dependencies = [
  "zerocopy",
 ]
+
+[[package]]
+name = "print-client"
+version = "0.1.0"
+
+[[package]]
+name = "print-server"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"
