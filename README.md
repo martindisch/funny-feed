@@ -11,6 +11,13 @@ To allow logged-in users besides root to access the printer, add this to
 ACTION!="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="0202", MODE="0660", TAG+="uaccess"
 ```
 
+If you're accessing the device via SSH, you need to do group assignment instead:
+
+```
+ACTION!="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="0202", MODE="0660", GROUP="plugdev"
+
+```
+
 ## License
 
 Licensed under either of
