@@ -1,5 +1,8 @@
 use escpos::{
-    driver::UsbDriver, printer::Printer, printer_options::PrinterOptions, utils::Protocol,
+    driver::UsbDriver,
+    printer::Printer,
+    printer_options::PrinterOptions,
+    utils::{PageCode, Protocol},
 };
 use eyre::{Result, eyre};
 use tiny_http::{Method, Request, Response, Server};
@@ -14,7 +17,7 @@ fn main() -> Result<()> {
     let mut printer = Printer::new(
         driver,
         Protocol::default(),
-        Some(PrinterOptions::new(None, None, 40)),
+        Some(PrinterOptions::new(Some(PageCode::PC850), None, 40)),
     );
 
     let server = Server::http(ADDR).map_err(|e| eyre!("failed to bind {ADDR}: {e}"))?;
