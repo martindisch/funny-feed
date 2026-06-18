@@ -2,7 +2,7 @@
 
 An Epson TM-U220 side project.
 
-## Usage
+## Setup
 
 To allow logged-in users besides root to access the printer, add this to
 `/etc/udev/rules.d/50-epson-printer.rules`:
@@ -16,6 +16,22 @@ If you're accessing the device via SSH, you need to do group assignment instead:
 ```
 ACTION!="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="0202", MODE="0660", GROUP="plugdev"
 
+```
+
+## Print server usage
+
+The print server listens on `0.0.0.0:8080`. Send the text to print as the body
+of a `POST /print` request. Each line is printed and the paper is cut
+afterwards:
+
+```bash
+curl --data-binary 'Hello from curl' http://localhost:8080/print
+```
+
+Multi-line input works too:
+
+```bash
+echo 'Line one\nLine two' | curl --data-binary @- http://localhost:8080/print
 ```
 
 ## License

@@ -4,3 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+escpos = { version = "0.19.0", default-features = false, features = [
+    "std",
+    "usb",
+] }
+eyre = "0.6.12"
+tiny_http = "0.12"
