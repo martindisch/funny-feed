@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+eyre = "0.6.12"
+hostname = "0.4"
+if-addrs = "0.13"
+print-client = { path = "../print-client" }
+time = { version = "0.3", features = ["formatting", "local-offset", "macros"] }
