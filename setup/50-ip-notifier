@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# NetworkManager dispatcher script to print the network interfaces whenever a
+# connection comes up or the DHCP lease changes
+
+action="$2"
+
+case "$action" in
+    up | dhcp4-change)
+        /usr/local/bin/ip-notifier
+        ;;
+esac

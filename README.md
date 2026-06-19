@@ -4,11 +4,27 @@ An Epson TM-U220 side project.
 
 ## Setup
 
+### Printer access
+
 To allow logged-in users besides root to access the printer, you need to copy
 the appropriate udev rule to `/etc/udev/rules.d`:
 
 - If you're accessing the device via SSH, use `setup/50-epson-printer-group.rules`
 - If you have a local session, use `setup/50-epson-printer-tag.rules`
+
+### Printing on network changes
+
+mDNS is an elegant way to get the IP of the device once it's in the network,
+but it can be hard to use.
+
+To reliably print the network interfaces whenever NetworkManager reports a
+change, install the `ip-notifier` binary and the dispatcher script:
+
+```bash
+cargo install --path crates/ip-notifier --root /usr/local
+sudo install -o root -g root -m 755 setup/50-ip-notifier \
+    /etc/NetworkManager/dispatcher.d/50-ip-notifier
+```
 
 ## Print server usage
 
