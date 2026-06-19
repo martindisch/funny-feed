@@ -49,10 +49,19 @@ sudo install -m 644 setup/print-server.service /etc/systemd/system/print-server.
 sudo install -m 644 setup/50-print-server.rules /etc/udev/rules.d/50-print-server.rules
 ```
 
+To make it available from the outside, add this block to a server directive
+in your nginx config.
+
+```nginx
+location = /print {
+    proxy_pass http://127.0.0.1:8080;
+}
+```
+
 ## Print server usage
 
-The print server listens on `0.0.0.0:8080`. Send the text to print as the body
-of a `POST /print` request. Each line is printed and the paper is cut
+The print server listens on `127.0.0.1:8080`. Send the text to print as the
+body of a `POST /print` request. Each line is printed and the paper is cut
 afterwards:
 
 ```bash

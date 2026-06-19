@@ -10,7 +10,7 @@ use tiny_http::{Method, Request, Response, Server};
 const VENDOR_ID: u16 = 0x04b8;
 const PRODUCT_ID: u16 = 0x0202;
 
-const ADDR: &str = "0.0.0.0:8080";
+const ADDR: &str = "127.0.0.1:8080";
 
 fn main() -> Result<()> {
     let driver = UsbDriver::open(VENDOR_ID, PRODUCT_ID, None, None)?;
