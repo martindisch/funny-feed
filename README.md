@@ -32,7 +32,8 @@ To reliably print the network interfaces whenever NetworkManager reports a
 change, install the `ip-notifier` binary and the dispatcher script:
 
 ```bash
-cargo install --path crates/ip-notifier --root /usr/local
+cargo build --release -p ip-notifier
+sudo install -m 755 target/release/ip-notifier /usr/local/bin/ip-notifier
 sudo install -o root -g root -m 755 setup/50-ip-notifier \
     /etc/NetworkManager/dispatcher.d/50-ip-notifier
 ```
@@ -44,7 +45,8 @@ the printer is plugged in, which starts it at boot and gives it a fresh USB
 connection on every replug.
 
 ```bash
-cargo install --path crates/print-server --root /usr/local
+cargo build --release -p print-server
+sudo install -m 755 target/release/print-server /usr/local/bin/print-server
 sudo install -m 644 setup/print-server.service /etc/systemd/system/print-server.service
 sudo install -m 644 setup/50-print-server.rules /etc/udev/rules.d/50-print-server.rules
 ```
