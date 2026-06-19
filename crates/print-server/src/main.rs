@@ -25,7 +25,6 @@ fn main() -> Result<()> {
 
     for mut request in server.incoming_requests() {
         let response = match (request.method(), request.url()) {
-            (Method::Get, "/health") => Response::from_string("ok\n"),
             (Method::Post, "/print") => match handle_print(&mut request, &mut printer) {
                 Ok(()) => Response::from_string("printed\n"),
                 Err(e) => {
