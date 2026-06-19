@@ -13,6 +13,10 @@ const STATE_FILE: &str = "/run/ip-notifier.state";
 
 fn main() -> Result<()> {
     let interfaces = collect_interfaces()?;
+    if interfaces.is_empty() {
+        return Ok(());
+    }
+
     let hashed_interfaces = hash_interfaces(&interfaces);
     if already_printed(&hashed_interfaces)? {
         return Ok(());
@@ -65,12 +69,8 @@ fn format_interfaces(
     now: &str,
     interfaces: &BTreeMap<String, BTreeSet<IpAddr>>,
 ) -> Result<String> {
-    let title = format!("Current network interfaces of\n{hostname}\n{now}\n");
-    if interfaces.is_empty() {
-        return Ok(format!("{title}\nNo network interfaces found.\n"));
-    }
+    let mut text = format!("Current network interfaces of\n{hostname}\n{now}\n");
 
-    let mut text = title;
     for (name, ips) in interfaces {
         write!(text, "\n{name}")?;
         for ip in ips {
