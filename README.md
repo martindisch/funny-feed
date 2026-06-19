@@ -26,6 +26,18 @@ sudo install -o root -g root -m 755 setup/50-ip-notifier \
     /etc/NetworkManager/dispatcher.d/50-ip-notifier
 ```
 
+### Running the print server
+
+We're also using udev rules to restart the print server's systemd unit whenever
+the printer is plugged in, which starts it at boot and gives it a fresh USB
+connection on every replug.
+
+```bash
+cargo install --path crates/print-server --root /usr/local
+sudo install -m 644 setup/print-server.service /etc/systemd/system/print-server.service
+sudo install -m 644 setup/50-print-server.rules /etc/udev/rules.d/50-print-server.rules
+```
+
 ## Print server usage
 
 The print server listens on `0.0.0.0:8080`. Send the text to print as the body

@@ -1,0 +1,8 @@
+[Unit]
+Description=funny-feed print server
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/print-server
+Restart=on-failure
+RestartSec=2
