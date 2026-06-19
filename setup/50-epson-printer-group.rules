@@ -1,0 +1,1 @@
+ACTION!="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="04b8", ATTRS{idProduct}=="0202", MODE="0660", GROUP="plugdev"
