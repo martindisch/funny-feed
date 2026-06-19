@@ -6,11 +6,22 @@ An Epson TM-U220 side project.
 
 ### Printer access
 
-To allow logged-in users besides root to access the printer, you need to copy
-the appropriate udev rule to `/etc/udev/rules.d`:
+To allow logged-in users besides root to access the printer, install the
+appropriate udev rule.
 
-- If you're accessing the device via SSH, use `setup/50-epson-printer-group.rules`
-- If you have a local session, use `setup/50-epson-printer-tag.rules`
+If you're accessing the device via SSH:
+
+```bash
+sudo install -m 644 setup/50-epson-printer-group.rules \
+    /etc/udev/rules.d/50-epson-printer-group.rules
+```
+
+If you have a local session:
+
+```bash
+sudo install -m 644 setup/50-epson-printer-tag.rules \
+    /etc/udev/rules.d/50-epson-printer-tag.rules
+```
 
 ### Printing on network changes
 
