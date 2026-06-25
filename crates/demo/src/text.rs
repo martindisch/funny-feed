@@ -9,6 +9,10 @@ use crate::graphics::Bitmap;
 /// Native glyph cell size of the embedded font, in font pixels.
 const GLYPH: usize = 8;
 
+/// Width drawn for blank glyphs (e.g. space) in proportional mode, in font
+/// pixels, since they have no ink to measure.
+const SPACE_COLUMNS: usize = 4;
+
 /// Rendering parameters for the embedded font.
 pub struct TextStyle {
     /// Horizontal scale: each font pixel becomes this many dots wide.
@@ -17,10 +21,14 @@ pub struct TextStyle {
     pub scale_y: usize,
     /// Blank dots between adjacent glyphs.
     pub letter_spacing: usize,
+    /// When `true`, each glyph advances by its actual ink width (leading and
+    /// trailing blank columns trimmed) instead of the fixed 8px cell, so text
+    /// is kerned tighter. When `false`, glyphs use the full fixed-width cell.
+    pub proportional: bool,
 }
 
 impl TextStyle {
-    /// Width of one scaled glyph cell, in dots.
+    /// Width of one full (fixed) scaled glyph cell, in dots.
     pub fn glyph_width(&self) -> usize {
         GLYPH * self.scale_x
     }
@@ -30,9 +38,21 @@ impl TextStyle {
         GLYPH * self.scale_y
     }
 
-    /// Horizontal distance from one glyph's origin to the next.
-    fn advance(&self) -> usize {
-        self.glyph_width() + self.letter_spacing
+    /// Number of font-pixel columns this glyph occupies under the current mode.
+    fn glyph_columns(&self, ch: char) -> usize {
+        if !self.proportional {
+            return GLYPH;
+        }
+        match ink_bounds(ascii(ch)) {
+            Some((left, right)) => right - left,
+            None => SPACE_COLUMNS,
+        }
+    }
+
+    /// Horizontal distance in dots from one glyph's origin to the next,
+    /// including the inter-glyph spacing.
+    fn advance_for(&self, ch: char) -> usize {
+        self.glyph_columns(ch) * self.scale_x + self.letter_spacing
     }
 }
 
@@ -47,16 +67,41 @@ fn ascii(ch: char) -> u8 {
     }
 }
 
+/// Inclusive-exclusive ink column bounds `[left, right)` for a printable-ASCII
+/// glyph, or `None` if the glyph has no set pixels (e.g. space).
+fn ink_bounds(ascii: u8) -> Option<(usize, usize)> {
+    let rows = &FONT8X8[(ascii - 0x20) as usize];
+    let mask = rows.iter().fold(0u8, |acc, &b| acc | b);
+    if mask == 0 {
+        None
+    } else {
+        // Columns are LSB-first, so the lowest set bit is the leftmost column.
+        let left = mask.trailing_zeros() as usize;
+        let right = GLYPH - mask.leading_zeros() as usize;
+        Some((left, right))
+    }
+}
+
 /// Blit one glyph into `bmp` at `(ox, oy)`, scaled by `style`. In the font data
-/// the least significant bit is the leftmost column.
+/// the least significant bit is the leftmost column. In proportional mode the
+/// glyph is shifted left so its first inked column starts at `ox`.
 pub fn draw_glyph(bmp: &mut Bitmap, ch: char, ox: usize, oy: usize, style: &TextStyle) {
-    let rows = &FONT8X8[(ascii(ch) - 0x20) as usize];
+    let code = ascii(ch);
+    let rows = &FONT8X8[(code - 0x20) as usize];
+    let left = if style.proportional {
+        ink_bounds(code).map_or(0, |(left, _)| left)
+    } else {
+        0
+    };
+
     for (row, bits) in rows.iter().enumerate() {
         for col in 0..GLYPH {
             if (bits >> col) & 1 == 1 {
+                // `col >= left` whenever a bit is set, so this never underflows.
+                let dst_col = col - left;
                 for dy in 0..style.scale_y {
                     for dx in 0..style.scale_x {
-                        let x = (ox + col * style.scale_x + dx) as isize;
+                        let x = (ox + dst_col * style.scale_x + dx) as isize;
                         let y = (oy + row * style.scale_y + dy) as isize;
                         bmp.set(x, y);
                     }
@@ -68,12 +113,8 @@ pub fn draw_glyph(bmp: &mut Bitmap, ch: char, ox: usize, oy: usize, style: &Text
 
 /// Width in dots of a single line of text (no trailing letter spacing).
 fn line_width(text: &str, style: &TextStyle) -> usize {
-    let count = text.chars().count();
-    if count == 0 {
-        0
-    } else {
-        count * style.advance() - style.letter_spacing
-    }
+    let total: usize = text.chars().map(|ch| style.advance_for(ch)).sum();
+    total.saturating_sub(style.letter_spacing)
 }
 
 /// Render a single line of text (no wrapping) into a tightly-sized bitmap.
@@ -86,7 +127,7 @@ pub fn render_line(text: &str, style: &TextStyle) -> Bitmap {
     let mut x = 0;
     for ch in text.chars() {
         draw_glyph(&mut bmp, ch, x, 0, style);
-        x += style.advance();
+        x += style.advance_for(ch);
     }
     bmp
 }
@@ -115,7 +156,7 @@ pub fn render_lines(lines: &[&str], line_gap: usize, style: &TextStyle) -> Bitma
         let mut x = 0;
         for ch in line.chars() {
             draw_glyph(&mut bmp, ch, x, oy, style);
-            x += style.advance();
+            x += style.advance_for(ch);
         }
     }
     bmp
@@ -124,7 +165,6 @@ pub fn render_lines(lines: &[&str], line_gap: usize, style: &TextStyle) -> Bitma
 /// Render text into a bitmap of fixed `max_width`, wrapping on `\n` and on
 /// character boundaries when a glyph would overflow the width.
 pub fn render_wrapped(text: &str, max_width: usize, line_gap: usize, style: &TextStyle) -> Bitmap {
-    let glyph_w = style.glyph_width();
     let glyph_h = style.glyph_height();
 
     let mut placed = Vec::new();
@@ -137,12 +177,13 @@ pub fn render_wrapped(text: &str, max_width: usize, line_gap: usize, style: &Tex
             y += glyph_h + line_gap;
             continue;
         }
+        let glyph_w = style.glyph_columns(ch) * style.scale_x;
         if x + glyph_w > max_width {
             x = 0;
             y += glyph_h + line_gap;
         }
         placed.push((x, y, ch));
-        x += style.advance();
+        x += style.advance_for(ch);
     }
 
     let mut bmp = Bitmap::new(max_width, y + glyph_h);

@@ -26,6 +26,9 @@ const SCALE_X: usize = 4;
 const SCALE_Y: usize = 4;
 /// Blank dots between adjacent glyphs.
 const LETTER_SPACING: usize = SCALE_X;
+/// Trim glyphs to their ink width for tighter spacing. Off here keeps the
+/// fixed-width grid look; set to `true` for proportional spacing.
+const PROPORTIONAL: bool = false;
 /// Blank dots between wrapped text lines.
 const LINE_GAP: usize = SCALE_Y * 2;
 
@@ -38,6 +41,7 @@ fn main() -> Result<()> {
         scale_x: SCALE_X,
         scale_y: SCALE_Y,
         letter_spacing: LETTER_SPACING,
+        proportional: PROPORTIONAL,
     };
     let bitmap = render_wrapped(TEXT, PRINT_WIDTH, LINE_GAP, &style);
     print_bitmap(&bitmap, MODE, BAND_FEED)?;

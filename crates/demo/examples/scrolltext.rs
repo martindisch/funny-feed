@@ -26,10 +26,12 @@ const BAND_FEED: u8 = 16;
 const SCALE_X: usize = 6;
 /// Glyph scale across the width of the paper.
 const SCALE_Y: usize = 8;
-/// Blank dots between adjacent glyphs. The embedded font already leaves a blank
-/// column or two inside each 8px cell, so a small value here reads fine; set it
-/// to 0 for the tightest the fixed-width cell allows.
-const LETTER_SPACING: usize = 0;
+/// Blank dots between adjacent glyphs. With `PROPORTIONAL` on, glyphs are
+/// trimmed to their ink, so this is the literal gap between characters.
+const LETTER_SPACING: usize = SCALE_X;
+/// Trim each glyph to its actual ink width so characters sit closer together,
+/// instead of using the font's fixed 8px cell.
+const PROPORTIONAL: bool = true;
 /// Blank dots between adjacent lines (measured across the paper width).
 const LINE_GAP: usize = SCALE_Y * 2;
 
@@ -42,6 +44,7 @@ fn main() -> Result<()> {
         scale_x: SCALE_X,
         scale_y: SCALE_Y,
         letter_spacing: LETTER_SPACING,
+        proportional: PROPORTIONAL,
     };
     let block = render_lines(LINES, LINE_GAP, &style);
     let banner = block.rotated_ccw();
