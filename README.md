@@ -38,6 +38,15 @@ sudo install -o root -g root -m 755 setup/50-ip-notifier \
     /etc/NetworkManager/dispatcher.d/50-ip-notifier
 ```
 
+### Lunch menu printout
+
+To print the daily menu feed automatically every weekday at 11:28,
+add it to the user crontab (no root required):
+
+```bash
+(crontab -l 2>/dev/null; cat setup/food-cron) | crontab -
+```
+
 ### Running the print server
 
 We're also using udev rules to restart the print server's systemd unit whenever
