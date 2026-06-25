@@ -3,7 +3,6 @@ resolver = "3"
 members = [
     "crates/demo",
     "crates/ip-notifier",
-    "crates/lunch-crawler",
     "crates/print-client",
     "crates/print-server",
 ]
