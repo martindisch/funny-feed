@@ -28,11 +28,6 @@ pub struct TextStyle {
 }
 
 impl TextStyle {
-    /// Width of one full (fixed) scaled glyph cell, in dots.
-    pub fn glyph_width(&self) -> usize {
-        GLYPH * self.scale_x
-    }
-
     /// Height of one scaled glyph cell, in dots.
     pub fn glyph_height(&self) -> usize {
         GLYPH * self.scale_y
@@ -85,7 +80,7 @@ fn ink_bounds(ascii: u8) -> Option<(usize, usize)> {
 /// Blit one glyph into `bmp` at `(ox, oy)`, scaled by `style`. In the font data
 /// the least significant bit is the leftmost column. In proportional mode the
 /// glyph is shifted left so its first inked column starts at `ox`.
-pub fn draw_glyph(bmp: &mut Bitmap, ch: char, ox: usize, oy: usize, style: &TextStyle) {
+fn draw_glyph(bmp: &mut Bitmap, ch: char, ox: usize, oy: usize, style: &TextStyle) {
     let code = ascii(ch);
     let rows = &FONT8X8[(code - 0x20) as usize];
     let left = if style.proportional {
@@ -117,53 +112,8 @@ fn line_width(text: &str, style: &TextStyle) -> usize {
     total.saturating_sub(style.letter_spacing)
 }
 
-/// Render a single line of text (no wrapping) into a tightly-sized bitmap.
-///
-/// Control characters, including newlines, are drawn as `?`.
-pub fn render_line(text: &str, style: &TextStyle) -> Bitmap {
-    let width = line_width(text, style).max(1);
-
-    let mut bmp = Bitmap::new(width, style.glyph_height());
-    let mut x = 0;
-    for ch in text.chars() {
-        draw_glyph(&mut bmp, ch, x, 0, style);
-        x += style.advance_for(ch);
-    }
-    bmp
-}
-
-/// Render several lines (no wrapping) stacked vertically into a single bitmap
-/// sized to the longest line. Each line is drawn on its own row separated by
-/// `line_gap` dots.
-///
-/// Control characters, including newlines, are drawn as `?`.
-pub fn render_lines(lines: &[&str], line_gap: usize, style: &TextStyle) -> Bitmap {
-    let glyph_h = style.glyph_height();
-    let width = lines
-        .iter()
-        .map(|line| line_width(line, style))
-        .max()
-        .unwrap_or(0)
-        .max(1);
-    let height = match lines.len() {
-        0 => glyph_h,
-        n => n * glyph_h + (n - 1) * line_gap,
-    };
-
-    let mut bmp = Bitmap::new(width, height);
-    for (row, line) in lines.iter().enumerate() {
-        let oy = row * (glyph_h + line_gap);
-        let mut x = 0;
-        for ch in line.chars() {
-            draw_glyph(&mut bmp, ch, x, oy, style);
-            x += style.advance_for(ch);
-        }
-    }
-    bmp
-}
-
 /// Total height in dots of `n_lines` stacked rows separated by `line_gap`.
-pub fn stack_height(n_lines: usize, line_gap: usize, style: &TextStyle) -> usize {
+fn stack_height(n_lines: usize, line_gap: usize, style: &TextStyle) -> usize {
     match n_lines {
         0 => 0,
         n => n * style.glyph_height() + (n - 1) * line_gap,

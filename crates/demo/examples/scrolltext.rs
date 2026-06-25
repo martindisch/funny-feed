@@ -1,17 +1,15 @@
 //! Print one or more lines of text rotated 90° so they run lengthwise down the
 //! paper strip, allowing banners of arbitrary length.
 //!
-//! The lines are stacked and centered with [`demo::text::render_lines_centered`]
-//! (a wide, short bitmap), then rotated a quarter turn with
-//! [`Bitmap::rotated_ccw`]. After rotation each line becomes its own column
-//! running the length of the strip, centered across its width; the text length
-//! becomes the feed length, so longer strings print a longer strip.
+//! The lines are stacked and centered with [`render_lines_centered`] (a wide,
+//! short bitmap), then rotated a quarter turn with [`Bitmap::rotated_ccw`].
+//! After rotation each line becomes its own column running the length of the
+//! strip, centered across its width; the text length becomes the feed length,
+//! so longer strings print a longer strip.
 //!
 //! The font is automatically scaled down so all the lines fit across the
 //! printable width: one or two lines print at the desired size, and adding more
 //! lines shrinks the glyphs (preserving their aspect ratio) until they fit.
-//! Switch [`Bitmap::rotated_ccw`] to [`Bitmap::rotated_cw`] to flip the reading
-//! direction.
 
 use eyre::Result;
 use print_server::graphics::print_bitmap;
