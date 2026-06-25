@@ -74,7 +74,7 @@ curl --data-binary 'Hello from curl' http://localhost:8080/print
 Multi-line input works too:
 
 ```bash
-echo 'Line one\nLine two' | curl --data-binary @- http://localhost:8080/print
+printf 'Line one\nLine two' | curl --data-binary @- http://localhost:8080/print
 ```
 
 ## License
