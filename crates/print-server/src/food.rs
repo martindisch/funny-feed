@@ -5,6 +5,14 @@ use serde::Deserialize;
 const FOOD_URL: &str = "https://eat.devinite.dev/data.json";
 const WIDTH: usize = 40;
 
+const MASCOT: &str = r#"               __
+   .,-;-;-,.../'_\
+  _/_/_/_|_\_\)  /
+'-<_><_><_><_>=/\
+  `|_|===/_/--`\_\
+   ""     ""    ""
+"#;
+
 #[derive(Debug, Deserialize)]
 struct RawData {
     date: String,
@@ -84,6 +92,19 @@ pub fn handle_food(printer: &mut Printer<UsbDriver>) -> Result<()> {
         p = p.feed()?;
     }
 
+    p = p
+        .justify(JustifyMode::CENTER)?
+        .feed()?
+        .writeln("Food facts by")?
+        .justify(JustifyMode::LEFT)?;
+    for line in center_block(MASCOT) {
+        p = p.writeln(&line)?;
+    }
+    p = p
+        .justify(JustifyMode::CENTER)?
+        .writeln("eat.devinite.dev")?
+        .justify(JustifyMode::LEFT)?;
+
     p.print_cut()?;
 
     Ok(())
@@ -147,4 +168,10 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
     }
 
     lines
+}
+
+fn center_block(block: &str) -> Vec<String> {
+    let max = block.lines().map(|l| l.chars().count()).max().unwrap_or(0);
+    let prefix = " ".repeat(WIDTH.saturating_sub(max) / 2);
+    block.lines().map(|l| format!("{prefix}{l}")).collect()
 }
