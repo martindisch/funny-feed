@@ -4,8 +4,8 @@
 //! reusable helpers in [`demo::graphics`]. See that module for why we drive
 //! `ESC *` directly instead of using the crate's `bit_image*` (`GS v 0`) path.
 
-use demo::graphics::{Bitmap, print_bitmap};
 use eyre::Result;
+use print_server::graphics::{Bitmap, print_bitmap};
 
 /// Image width in dot columns.
 const WIDTH: usize = 192;

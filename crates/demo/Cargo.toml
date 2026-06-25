@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+print-server = { path = "../print-server" }
 escpos = { version = "0.19.0", default-features = false, features = [
     "std",
     "usb",

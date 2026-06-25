@@ -170,6 +170,38 @@ pub fn stack_height(n_lines: usize, line_gap: usize, style: &TextStyle) -> usize
     }
 }
 
+/// Choose the largest uniformly scaled-down style (starting from `desired`) at
+/// which `n_lines` stacked lines fit within `max_across` dots, preserving the
+/// glyph aspect ratio. Returns the style and the line gap in dots (`line_gap_px`
+/// font pixels scaled with the glyphs).
+///
+/// One or two lines typically print at the desired size; adding more lines
+/// shrinks the glyphs until the stack fits.
+pub fn fit_lines(
+    n_lines: usize,
+    max_across: usize,
+    desired: &TextStyle,
+    line_gap_px: usize,
+) -> (TextStyle, usize) {
+    let base_y = desired.scale_y.max(1);
+    let mut scale_y = base_y;
+    loop {
+        let scale_x = (desired.scale_x * scale_y / base_y).max(1);
+        let style = TextStyle {
+            scale_x,
+            scale_y,
+            letter_spacing: desired.letter_spacing * scale_y / base_y,
+            proportional: desired.proportional,
+        };
+        let line_gap = line_gap_px * scale_y;
+
+        if scale_y == 1 || stack_height(n_lines, line_gap, &style) <= max_across {
+            return (style, line_gap);
+        }
+        scale_y -= 1;
+    }
+}
+
 /// Render lines stacked and centered within a band `band_height` dots tall.
 ///
 /// The bitmap is `band_height` tall and as wide as the longest line; the stack

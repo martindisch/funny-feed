@@ -13,9 +13,9 @@
 //! Switch [`Bitmap::rotated_ccw`] to [`Bitmap::rotated_cw`] to flip the reading
 //! direction.
 
-use demo::graphics::print_bitmap;
-use demo::text::{TextStyle, render_lines_centered, stack_height};
 use eyre::Result;
+use print_server::graphics::print_bitmap;
+use print_server::text::{TextStyle, fit_lines, render_lines_centered};
 
 /// `ESC *` mode (0 = single density ~60 dpi, 1 = double density ~120 dpi).
 const MODE: u8 = 0;
@@ -40,32 +40,15 @@ const PROPORTIONAL: bool = true;
 const LINES: &[&str] = &["First", "Second", "Third", "Fourth"];
 
 fn main() -> Result<()> {
-    let (style, line_gap) = fit_to_strip(LINES.len());
+    let desired = TextStyle {
+        scale_x: SCALE_X,
+        scale_y: SCALE_Y,
+        letter_spacing: SCALE_X,
+        proportional: PROPORTIONAL,
+    };
+    let (style, line_gap) = fit_lines(LINES.len(), PRINT_WIDTH, &desired, LINE_GAP_PX);
     let block = render_lines_centered(LINES, PRINT_WIDTH, line_gap, &style);
     let banner = block.rotated_ccw();
     print_bitmap(&banner, MODE, BAND_FEED)?;
     Ok(())
-}
-
-/// Pick the largest glyph scale (down from the desired size) at which all
-/// `n_lines` lines, plus the gaps between them, fit within [`PRINT_WIDTH`].
-/// Returns the chosen style and the matching line gap in dots.
-fn fit_to_strip(n_lines: usize) -> (TextStyle, usize) {
-    let mut scale_y = SCALE_Y.max(1);
-    loop {
-        // Shrink horizontal scale proportionally to keep the glyph aspect ratio.
-        let scale_x = (SCALE_X * scale_y / SCALE_Y).max(1);
-        let line_gap = LINE_GAP_PX * scale_y;
-        let style = TextStyle {
-            scale_x,
-            scale_y,
-            letter_spacing: scale_x,
-            proportional: PROPORTIONAL,
-        };
-
-        if scale_y == 1 || stack_height(n_lines, line_gap, &style) <= PRINT_WIDTH {
-            return (style, line_gap);
-        }
-        scale_y -= 1;
-    }
 }

@@ -7,6 +7,7 @@ use escpos::{
 use eyre::{Result, eyre};
 use tiny_http::{Method, Response, Server};
 
+mod banner;
 mod food;
 mod print;
 
@@ -40,6 +41,13 @@ fn main() -> Result<()> {
                 Err(e) => {
                     eprintln!("food error: {e:?}");
                     Response::from_string(format!("food failed: {e}\n")).with_status_code(500)
+                }
+            },
+            (Method::Post, "/banner") => match banner::handle_banner(&mut request, &mut printer) {
+                Ok(()) => Response::from_string("printed\n"),
+                Err(e) => {
+                    eprintln!("banner error: {e:?}");
+                    Response::from_string(format!("banner failed: {e}\n")).with_status_code(500)
                 }
             },
             _ => Response::from_string("not found\n").with_status_code(404),

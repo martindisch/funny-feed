@@ -8,9 +8,9 @@
 //! is ~60 dpi in `MODE` 0, so equal `SCALE_X`/`SCALE_Y` print slightly wider
 //! than tall. Lower `SCALE_X` or switch to `MODE` 1 for squarer characters.
 
-use demo::graphics::print_bitmap;
-use demo::text::{TextStyle, render_wrapped};
 use eyre::Result;
+use print_server::graphics::print_bitmap;
+use print_server::text::{TextStyle, render_wrapped};
 
 /// Printable width in dot columns. The TM-U220's printable area is only ~1.5"
 /// wide, so large characters fit just a few per line.

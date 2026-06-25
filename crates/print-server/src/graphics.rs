@@ -7,7 +7,7 @@
 //! horizontal gaps.
 
 use escpos::{
-    driver::UsbDriver,
+    driver::{Driver, UsbDriver},
     printer::Printer,
     utils::{DebugMode, JustifyMode, Protocol},
 };
@@ -118,18 +118,22 @@ pub fn encode_bit_image(bitmap: &Bitmap, mode: u8) -> Vec<u8> {
     out
 }
 
-/// Open the USB printer and print a bitmap as a contiguous bit image.
+/// Emit a bitmap as a contiguous bit image onto an already-initialized printer.
 ///
-/// `band_feed` is the per-band line feed pitch in 1/144" units (`ESC 3 n`);
-/// `16` matches the U220's 72 dpi vertical pitch. Unidirectional print mode
-/// (`ESC U 1`) is enabled so vertical lines stay crisp.
-pub fn print_bitmap(bitmap: &Bitmap, mode: u8, band_feed: u8) -> Result<()> {
+/// The caller is responsible for `init()` beforehand and `print_cut()` (or
+/// similar) afterwards; this only writes the image commands. `band_feed` is the
+/// per-band line feed pitch in 1/144" units (`ESC 3 n`); `16` matches the
+/// U220's 72 dpi vertical pitch. Unidirectional print mode (`ESC U 1`) is
+/// enabled so vertical lines stay crisp.
+pub fn write_bitmap<D: Driver>(
+    printer: &mut Printer<D>,
+    bitmap: &Bitmap,
+    mode: u8,
+    band_feed: u8,
+) -> Result<()> {
     let payload = encode_bit_image(bitmap, mode);
 
-    let driver = UsbDriver::open(0x04b8, 0x0202, None, None)?;
-    Printer::new(driver, Protocol::default(), None)
-        .debug_mode(Some(DebugMode::Dec))
-        .init()?
+    printer
         // `ESC U 1`: unidirectional print mode. The head prints every band in
         // the same direction, avoiding the bidirectional registration backlash
         // that makes vertical lines look jagged.
@@ -138,8 +142,22 @@ pub fn print_bitmap(bitmap: &Bitmap, mode: u8, band_feed: u8) -> Result<()> {
         .line_spacing(band_feed)?
         .custom(&payload)?
         .reset_line_spacing()?
-        .feed()?
-        .print_cut()?;
+        .feed()?;
+
+    Ok(())
+}
+
+/// Open the USB printer and print a bitmap as a contiguous bit image.
+///
+/// `band_feed` is the per-band line feed pitch in 1/144" units (`ESC 3 n`);
+/// `16` matches the U220's 72 dpi vertical pitch. Unidirectional print mode
+/// (`ESC U 1`) is enabled so vertical lines stay crisp.
+pub fn print_bitmap(bitmap: &Bitmap, mode: u8, band_feed: u8) -> Result<()> {
+    let driver = UsbDriver::open(0x04b8, 0x0202, None, None)?;
+    let mut printer = Printer::new(driver, Protocol::default(), None);
+    printer.debug_mode(Some(DebugMode::Dec)).init()?;
+    write_bitmap(&mut printer, bitmap, mode, band_feed)?;
+    printer.print_cut()?;
 
     Ok(())
 }
