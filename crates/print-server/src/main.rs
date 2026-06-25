@@ -7,6 +7,8 @@ use escpos::{
 use eyre::{Result, eyre};
 use tiny_http::{Method, Request, Response, Server};
 
+mod food;
+
 const VENDOR_ID: u16 = 0x04b8;
 const PRODUCT_ID: u16 = 0x0202;
 
@@ -30,6 +32,13 @@ fn main() -> Result<()> {
                 Err(e) => {
                     eprintln!("print error: {e:?}");
                     Response::from_string(format!("print failed: {e}\n")).with_status_code(500)
+                }
+            },
+            (Method::Get, "/food") => match food::handle_food(&mut printer) {
+                Ok(()) => Response::from_string("printed\n"),
+                Err(e) => {
+                    eprintln!("food error: {e:?}");
+                    Response::from_string(format!("food failed: {e}\n")).with_status_code(500)
                 }
             },
             _ => Response::from_string("not found\n").with_status_code(404),
