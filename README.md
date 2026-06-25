@@ -77,6 +77,15 @@ Multi-line input works too:
 printf 'Line one\nLine two' | curl --data-binary @- http://localhost:8080/print
 ```
 
+### Lunch menu
+
+A `GET /food` request fetches the daily menu feed and prints each restaurant
+with its dishes and prices, finished off with the mascot:
+
+```bash
+curl http://localhost:8080/food
+```
+
 ## License
 
 Licensed under either of
