@@ -58,6 +58,32 @@ impl Bitmap {
             false
         }
     }
+
+    /// Return a copy rotated 90° clockwise. Width and height swap.
+    pub fn rotated_cw(&self) -> Bitmap {
+        let mut out = Bitmap::new(self.height, self.width);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if self.get(x, y) {
+                    out.set((self.height - 1 - y) as isize, x as isize);
+                }
+            }
+        }
+        out
+    }
+
+    /// Return a copy rotated 90° counter-clockwise. Width and height swap.
+    pub fn rotated_ccw(&self) -> Bitmap {
+        let mut out = Bitmap::new(self.height, self.width);
+        for y in 0..self.height {
+            for x in 0..self.width {
+                if self.get(x, y) {
+                    out.set(y as isize, (self.width - 1 - x) as isize);
+                }
+            }
+        }
+        out
+    }
 }
 
 /// Encode a bitmap into a sequence of `ESC * m nL nH d..` bands, each followed
