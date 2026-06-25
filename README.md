@@ -64,13 +64,15 @@ To make it available from the outside, add this block to a server directive
 in your nginx config.
 
 ```nginx
-location = /print {
+location ~ ^/(print|food|banner)$ {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_pass http://127.0.0.1:8080;
 }
 ```
 
 ## Print server usage
+
+### Basic text
 
 The print server listens on `127.0.0.1:8080`. Send the text to print as the
 body of a `POST /print` request. Each line is printed and the paper is cut
@@ -84,6 +86,17 @@ Multi-line input works too:
 
 ```bash
 printf 'Line one\nLine two' | curl --data-binary @- http://localhost:8080/print
+```
+
+### Banner
+
+A `POST /banner` request renders the body as large text rotated 90°, running
+lengthwise down the paper strip. Each input line becomes one banner line,
+centered as a block; the glyphs shrink automatically so all lines fit across the
+strip:
+
+```bash
+printf 'First\nSecond' | curl --data-binary @- http://localhost:8080/banner
 ```
 
 ### Lunch menu
