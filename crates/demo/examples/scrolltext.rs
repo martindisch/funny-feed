@@ -26,8 +26,10 @@ const BAND_FEED: u8 = 16;
 const SCALE_X: usize = 6;
 /// Glyph scale across the width of the paper.
 const SCALE_Y: usize = 8;
-/// Blank dots between adjacent glyphs.
-const LETTER_SPACING: usize = SCALE_X;
+/// Blank dots between adjacent glyphs. The embedded font already leaves a blank
+/// column or two inside each 8px cell, so a small value here reads fine; set it
+/// to 0 for the tightest the fixed-width cell allows.
+const LETTER_SPACING: usize = 0;
 /// Blank dots between adjacent lines (measured across the paper width).
 const LINE_GAP: usize = SCALE_Y * 2;
 
