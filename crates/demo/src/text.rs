@@ -66,22 +66,57 @@ pub fn draw_glyph(bmp: &mut Bitmap, ch: char, ox: usize, oy: usize, style: &Text
     }
 }
 
+/// Width in dots of a single line of text (no trailing letter spacing).
+fn line_width(text: &str, style: &TextStyle) -> usize {
+    let count = text.chars().count();
+    if count == 0 {
+        0
+    } else {
+        count * style.advance() - style.letter_spacing
+    }
+}
+
 /// Render a single line of text (no wrapping) into a tightly-sized bitmap.
 ///
 /// Control characters, including newlines, are drawn as `?`.
 pub fn render_line(text: &str, style: &TextStyle) -> Bitmap {
-    let count = text.chars().count();
-    let width = if count == 0 {
-        1
-    } else {
-        count * style.advance() - style.letter_spacing
-    };
+    let width = line_width(text, style).max(1);
 
     let mut bmp = Bitmap::new(width, style.glyph_height());
     let mut x = 0;
     for ch in text.chars() {
         draw_glyph(&mut bmp, ch, x, 0, style);
         x += style.advance();
+    }
+    bmp
+}
+
+/// Render several lines (no wrapping) stacked vertically into a single bitmap
+/// sized to the longest line. Each line is drawn on its own row separated by
+/// `line_gap` dots.
+///
+/// Control characters, including newlines, are drawn as `?`.
+pub fn render_lines(lines: &[&str], line_gap: usize, style: &TextStyle) -> Bitmap {
+    let glyph_h = style.glyph_height();
+    let width = lines
+        .iter()
+        .map(|line| line_width(line, style))
+        .max()
+        .unwrap_or(0)
+        .max(1);
+    let height = match lines.len() {
+        0 => glyph_h,
+        n => n * glyph_h + (n - 1) * line_gap,
+    };
+
+    let mut bmp = Bitmap::new(width, height);
+    for (row, line) in lines.iter().enumerate() {
+        let oy = row * (glyph_h + line_gap);
+        let mut x = 0;
+        for ch in line.chars() {
+            draw_glyph(&mut bmp, ch, x, oy, style);
+            x += style.advance();
+        }
     }
     bmp
 }
