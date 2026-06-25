@@ -162,6 +162,50 @@ pub fn render_lines(lines: &[&str], line_gap: usize, style: &TextStyle) -> Bitma
     bmp
 }
 
+/// Total height in dots of `n_lines` stacked rows separated by `line_gap`.
+pub fn stack_height(n_lines: usize, line_gap: usize, style: &TextStyle) -> usize {
+    match n_lines {
+        0 => 0,
+        n => n * style.glyph_height() + (n - 1) * line_gap,
+    }
+}
+
+/// Render lines stacked and centered within a band `band_height` dots tall.
+///
+/// The bitmap is `band_height` tall and as wide as the longest line; the stack
+/// of lines is centered vertically within the band, while the lines themselves
+/// are left-aligned (all starting at the same edge). If the stack is taller than
+/// `band_height` the bitmap grows to fit (so nothing is clipped) — scale the
+/// text down beforehand if it must fit a fixed strip.
+pub fn render_lines_centered(
+    lines: &[&str],
+    band_height: usize,
+    line_gap: usize,
+    style: &TextStyle,
+) -> Bitmap {
+    let glyph_h = style.glyph_height();
+    let width = lines
+        .iter()
+        .map(|line| line_width(line, style))
+        .max()
+        .unwrap_or(0)
+        .max(1);
+    let stack = stack_height(lines.len(), line_gap, style);
+    let height = band_height.max(stack).max(1);
+    let top = (height - stack) / 2;
+
+    let mut bmp = Bitmap::new(width, height);
+    for (row, line) in lines.iter().enumerate() {
+        let oy = top + row * (glyph_h + line_gap);
+        let mut x = 0;
+        for ch in line.chars() {
+            draw_glyph(&mut bmp, ch, x, oy, style);
+            x += style.advance_for(ch);
+        }
+    }
+    bmp
+}
+
 /// Render text into a bitmap of fixed `max_width`, wrapping on `\n` and on
 /// character boundaries when a glyph would overflow the width.
 pub fn render_wrapped(text: &str, max_width: usize, line_gap: usize, style: &TextStyle) -> Bitmap {
