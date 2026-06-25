@@ -17,6 +17,8 @@ struct MenuResult {
     status: String,
     #[serde(default)]
     items: Vec<MenuItem>,
+    #[serde(default)]
+    error: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -55,15 +57,27 @@ pub fn handle_food(printer: &mut Printer<UsbDriver>) -> Result<()> {
         }
         p = p.bold(false)?;
 
-        if result.status != "ok" {
-            p = p.writeln(&format!("  ({})", result.status))?;
-        } else if result.items.is_empty() {
-            p = p.writeln("  (no items)")?;
-        } else {
-            for item in &result.items {
-                for line in format_item(&item.name, item.price.as_deref()) {
-                    p = p.writeln(&line)?;
+        match result.status.as_str() {
+            "ok" if !result.items.is_empty() => {
+                for item in &result.items {
+                    for line in format_item(&item.name, item.price.as_deref()) {
+                        p = p.writeln(&line)?;
+                    }
                 }
+            }
+            "ok" | "no-menu" => {
+                p = p.writeln("  No menu today")?;
+            }
+            "error" => {
+                p = p.writeln("  Menu unavailable")?;
+                if let Some(error) = &result.error {
+                    for line in wrap(error, WIDTH) {
+                        p = p.writeln(&line)?;
+                    }
+                }
+            }
+            other => {
+                p = p.writeln(&format!("  ({other})"))?;
             }
         }
 
