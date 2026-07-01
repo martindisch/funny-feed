@@ -4,6 +4,12 @@ use serde::Deserialize;
 
 const FOOD_URL: &str = "https://eat.devinite.dev/data.json";
 const WIDTH: usize = 40;
+const ALLOWED_RESTAURANTS: &[&str] = &[
+    "westhive-hardturm",
+    "roots-kitchen",
+    "zhdk-toni-areal",
+    "lunch-5",
+];
 
 const MASCOT: &str = r#"               __
    .,-;-;-,.../'_\
@@ -31,6 +37,7 @@ struct MenuResult {
 
 #[derive(Debug, Deserialize)]
 struct Restaurant {
+    id: String,
     name: String,
 }
 
@@ -58,7 +65,11 @@ pub fn handle_food(printer: &mut Printer<UsbDriver>) -> Result<()> {
         .justify(JustifyMode::LEFT)?
         .feed()?;
 
-    for result in &data.results {
+    for result in data
+        .results
+        .iter()
+        .filter(|result| ALLOWED_RESTAURANTS.contains(&result.restaurant.id.as_str()))
+    {
         p = p.bold(true)?;
         for line in wrap(&result.restaurant.name, WIDTH) {
             p = p.writeln(&line)?;
