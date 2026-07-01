@@ -7,8 +7,8 @@ const WIDTH: usize = 40;
 const ALLOWED_RESTAURANTS: &[&str] = &[
     "westhive-hardturm",
     "roots-kitchen",
-    "zhdk-toni-areal",
     "lunch-5",
+    "zhdk-toni-areal",
 ];
 
 const MASCOT: &str = r#"               __
@@ -65,11 +65,11 @@ pub fn handle_food(printer: &mut Printer<UsbDriver>) -> Result<()> {
         .justify(JustifyMode::LEFT)?
         .feed()?;
 
-    for result in data
-        .results
-        .iter()
-        .filter(|result| ALLOWED_RESTAURANTS.contains(&result.restaurant.id.as_str()))
-    {
+    for result in ALLOWED_RESTAURANTS.iter().filter_map(|id| {
+        data.results
+            .iter()
+            .find(|result| &result.restaurant.id.as_str() == id)
+    }) {
         p = p.bold(true)?;
         for line in wrap(&result.restaurant.name, WIDTH) {
             p = p.writeln(&line)?;
