@@ -92,15 +92,18 @@ pub fn handle_vote(request: &mut Request, printer: &mut Printer<UsbDriver>) -> R
         return Ok(Outcome::Empty);
     }
 
-    let mut p = printer
-        .init()?
-        .bold(true)?
-        .writeln(&format!("Suggested by {name}"))?
-        .bold(false)?;
-    for line in lines {
+    // The printer flips each line individually, so the block is emitted back to
+    // front to read correctly once the strip is turned around.
+    let mut p = printer.init()?.upside_down(true)?;
+    for line in lines.iter().rev() {
         p = p.writeln(line)?;
     }
-    p.feeds(8)?.print()?;
+    p.bold(true)?
+        .writeln(&format!("Suggested by {name}"))?
+        .bold(false)?
+        .upside_down(false)?
+        .feeds(8)?
+        .print()?;
 
     Ok(Outcome::Printed)
 }
