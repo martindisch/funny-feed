@@ -5,4 +5,5 @@ members = [
     "crates/ip-notifier",
     "crates/print-client",
     "crates/print-server",
+    "crates/voting-machine",
 ]

@@ -64,7 +64,7 @@ To make it available from the outside, add this block to a server directive
 in your nginx config.
 
 ```nginx
-location ~ ^/(print|food|banner)$ {
+location ~ ^/(print|food|banner|vote)$ {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_pass http://127.0.0.1:8080;
 }
