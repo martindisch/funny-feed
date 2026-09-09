@@ -42,6 +42,13 @@ fn main() -> Result<()> {
                     html(vote::ERROR_PAGE, 500)
                 }
             },
+            (Method::Get, "/cut") => match vote::handle_cut(&mut printer) {
+                Ok(()) => Response::from_string("cut\n"),
+                Err(e) => {
+                    eprintln!("cut error: {e:?}");
+                    Response::from_string(format!("cut failed: {e}\n")).with_status_code(500)
+                }
+            },
             _ => Response::from_string("not found\n").with_status_code(404),
         };
 

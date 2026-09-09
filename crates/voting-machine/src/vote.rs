@@ -108,6 +108,12 @@ pub fn handle_vote(request: &mut Request, printer: &mut Printer<UsbDriver>) -> R
     Ok(Outcome::Printed)
 }
 
+pub fn handle_cut(printer: &mut Printer<UsbDriver>) -> Result<()> {
+    printer.init()?.print_cut()?;
+
+    Ok(())
+}
+
 fn parse_form(body: &str) -> Vec<(String, String)> {
     body.split('&')
         .filter(|pair| !pair.is_empty())
