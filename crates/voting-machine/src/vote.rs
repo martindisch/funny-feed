@@ -22,12 +22,12 @@ pub const FORM_PAGE: &str = r#"<!DOCTYPE html>
 <form method="post" action="/vote">
 <p>
 <label for="suggestions">Name suggestions</label><br>
-<textarea id="suggestions" name="suggestions" rows="6" cols="24" required></textarea><br>
+<textarea id="suggestions" name="suggestions" rows="6" cols="40" required></textarea><br>
 <small>One suggestion per line.</small>
 </p>
 <p>
 <label for="name">Your name (optional)</label><br>
-<input id="name" name="name" type="text" size="15" autocapitalize="words">
+<input id="name" name="name" type="text" size="27" autocapitalize="words">
 </p>
 <button type="submit">Print</button>
 </form>
