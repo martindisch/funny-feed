@@ -16,6 +16,15 @@ pub const FORM_PAGE: &str = r#"<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Voting machine</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; }
+textarea, input, button { font-family: monospace; font-size: min(1rem, 3.6vw); }
+/* Widths in ch keep the character counts exact while the font size scales. */
+textarea { width: 40ch; }
+input { width: 27ch; }
+textarea, input { box-sizing: content-box; max-width: 100%; padding: 0.25rem; }
+button { font-size: 1rem; padding: 0.5rem 1rem; }
+</style>
 </head>
 <body>
 <h1>Voting machine</h1>
