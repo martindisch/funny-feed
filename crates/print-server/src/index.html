@@ -6,6 +6,8 @@
 <title>Print server</title>
 <style>
 body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; }
+h1 { margin-bottom: 0; }
+h1 + p { margin-top: 0; }
 textarea, input { font-family: monospace; font-size: min(1rem, 3.6vw); }
 textarea, input { width: 40ch; box-sizing: content-box; max-width: 100%; padding: 0.25rem; }
 textarea { white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; }
@@ -14,6 +16,7 @@ button { font-size: 1rem; padding: 0.5rem 1rem; }
 </head>
 <body>
 <h1>Print server</h1>
+<p>{{WLAN0_IP}}</p>
 <noscript><p>JavaScript is required to submit print jobs.</p></noscript>
 <section aria-labelledby="text-heading">
 <h2 id="text-heading">Free text</h2>

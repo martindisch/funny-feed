@@ -29,11 +29,17 @@ fn main() -> Result<()> {
 
     for mut request in server.incoming_requests() {
         let response = match (request.method(), request.url()) {
-            (Method::Get, "/printer") => Response::from_string(include_str!("index.html"))
-                .with_header(
+            (Method::Get, "/printer") => match printer_page() {
+                Ok(page) => Response::from_string(page).with_header(
                     Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..])
                         .unwrap(),
                 ),
+                Err(e) => {
+                    eprintln!("printer page error: {e:?}");
+                    Response::from_string(format!("printer page failed: {e}\n"))
+                        .with_status_code(500)
+                }
+            },
             (Method::Post, "/print") => match print::handle_print(&mut request, &mut printer) {
                 Ok(()) => Response::from_string("printed\n"),
                 Err(e) => {
@@ -64,4 +70,14 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn printer_page() -> Result<String> {
+    let address = if_addrs::get_if_addrs()?
+        .into_iter()
+        .find(|iface| iface.name == "wlan0" && !iface.is_loopback())
+        .map(|iface| iface.ip().to_string())
+        .unwrap_or_else(|| "No wlan0 IP address".to_string());
+
+    Ok(include_str!("index.html").replace("{{WLAN0_IP}}", &address))
 }

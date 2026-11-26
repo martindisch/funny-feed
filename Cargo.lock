@@ -247,6 +247,7 @@ version = "0.1.0"
 dependencies = [
  "escpos",
  "eyre",
+ "if-addrs",
  "minreq",
  "serde",
  "serde_json",
