@@ -64,13 +64,18 @@ To make it available from the outside, add this block to a server directive
 in your nginx config.
 
 ```nginx
-location ~ ^/(print|food|banner|vote|cut)$ {
+location ~ ^/(printer|print|food|banner|vote|cut)$ {
     proxy_set_header X-Real-IP $remote_addr;
     proxy_pass http://127.0.0.1:8080;
 }
 ```
 
 ## Print server usage
+
+### Web interface
+
+A basic UI is available under `/printer` on the print server for free-text and
+banner printing.
 
 ### Basic text
 

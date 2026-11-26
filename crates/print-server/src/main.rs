@@ -5,7 +5,7 @@ use escpos::{
     utils::{PageCode, Protocol},
 };
 use eyre::{Result, eyre};
-use tiny_http::{Method, Response, Server};
+use tiny_http::{Header, Method, Response, Server};
 
 mod banner;
 mod food;
@@ -29,6 +29,11 @@ fn main() -> Result<()> {
 
     for mut request in server.incoming_requests() {
         let response = match (request.method(), request.url()) {
+            (Method::Get, "/printer") => Response::from_string(include_str!("index.html"))
+                .with_header(
+                    Header::from_bytes(&b"Content-Type"[..], &b"text/html; charset=utf-8"[..])
+                        .unwrap(),
+                ),
             (Method::Post, "/print") => match print::handle_print(&mut request, &mut printer) {
                 Ok(()) => Response::from_string("printed\n"),
                 Err(e) => {

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Print server</title>
+<style>
+body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; }
+textarea, input { font-family: monospace; font-size: min(1rem, 3.6vw); }
+textarea, input { width: 40ch; box-sizing: content-box; max-width: 100%; padding: 0.25rem; }
+textarea { white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; }
+button { font-size: 1rem; padding: 0.5rem 1rem; }
+</style>
+</head>
+<body>
+<h1>Print server</h1>
+<noscript><p>JavaScript is required to submit print jobs.</p></noscript>
+<section aria-labelledby="text-heading">
+<h2 id="text-heading">Free text</h2>
+<form method="post" action="/print">
+<p>
+<label for="text">Text to print</label><br>
+<textarea id="text" name="text" rows="6" cols="40" wrap="soft" required></textarea>
+</p>
+<button type="submit" disabled>Print text</button>
+<p role="status" aria-live="polite"></p>
+</form>
+</section>
+<section aria-labelledby="banner-heading">
+<h2 id="banner-heading">Banner</h2>
+<form method="post" action="/banner">
+<p>
+<label for="banner">Banner text</label><br>
+<input id="banner" name="text" type="text" required>
+</p>
+<button type="submit" disabled>Print banner</button>
+<p role="status" aria-live="polite"></p>
+</form>
+</section>
+<script>
+function wrapText(text) {
+    return text.replace(/\r\n?/g, "\n").split("\n").map(line => {
+        let characters = Array.from(line);
+        const lines = [];
+        while (characters.length > 40) {
+            let boundary = 40;
+            while (boundary > 0 && characters[boundary] !== " ") {
+                boundary--;
+            }
+            if (boundary === 0 && characters[0] !== " ") {
+                boundary = 40;
+            }
+            lines.push(characters.slice(0, boundary).join("").trimEnd());
+            characters = Array.from(characters.slice(boundary).join("").trimStart());
+        }
+        lines.push(characters.join(""));
+        return lines.join("\n");
+    }).join("\n");
+}
+
+for (const form of document.querySelectorAll("form")) {
+    const input = form.elements.namedItem("text");
+    const button = form.querySelector("button");
+    const status = form.querySelector('[role="status"]');
+    const isText = input instanceof HTMLTextAreaElement;
+    button.disabled = false;
+
+    function validate() {
+        input.setCustomValidity("");
+        if (!input.value.trim()) {
+            input.setCustomValidity("Enter some text to print.");
+        }
+    }
+
+    input.addEventListener("input", validate);
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (button.disabled) return;
+        validate();
+        if (!form.reportValidity()) return;
+
+        button.disabled = true;
+        status.textContent = "Printing...";
+        try {
+            const response = await fetch(form.action, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain; charset=utf-8" },
+                body: isText ? wrapText(input.value) : input.value,
+            });
+            if (!response.ok) {
+                const detail = (await response.text()).trim();
+                throw new Error(detail || `Server returned HTTP ${response.status}.`);
+            }
+            form.reset();
+            status.textContent = "Printed.";
+        } catch (error) {
+            status.textContent = `Printing failed: ${error.message}`;
+        } finally {
+            button.disabled = false;
+        }
+    });
+}
+</script>
+</body>
+</html>
